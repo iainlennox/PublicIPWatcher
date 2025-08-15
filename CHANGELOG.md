@@ -43,5 +43,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Windows 11
 - 64-bit (x64) architecture only
 
-[Unreleased]: https://github.com/yourusername/PublicIPWatcher/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/yourusername/PublicIPWatcher/releases/tag/v1.0.0
+[Unreleased]: https://github.com/iainlennox/PublicIPWatcher/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/iainlennox/PublicIPWatcher/releases/tag/v1.0.0

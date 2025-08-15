@@ -62,7 +62,7 @@ Access the status window to configure:
 
 1. **Clone** the repository:
    ```bash
-   git clone https://github.com/yourusername/PublicIPWatcher.git
+   git clone https://github.com/iainlennox/PublicIPWatcher.git
    cd PublicIPWatcher
    ```
 

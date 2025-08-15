@@ -1,0 +1,161 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+        
+    - name: Restore dependencies
+      run: dotnet restore IPNotification.sln
+      
+    - name: Build
+      run: dotnet build IPNotification.sln --no-restore --configuration Release
+      
+    - name: Publish self-contained
+      run: |
+        dotnet publish IPNotification\IPNotification.csproj `
+          -c Release `
+          -r win-x64 `
+          --self-contained true `
+          -p:PublishSingleFile=true `
+          -p:IncludeNativeLibrariesForSelfExtract=true `
+          -o publish
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: PublicIPWatcher-${{ github.sha }}
+        path: publish/IPNotification.exe
+        
+  release:
+    needs: build
+    runs-on: windows-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+        
+    - name: Publish self-contained
+      run: |
+        dotnet publish IPNotification\IPNotification.csproj `
+          -c Release `
+          -r win-x64 `
+          --self-contained true `
+          -p:PublishSingleFile=true `
+          -p:IncludeNativeLibrariesForSelfExtract=true `
+          -o release
+          
+    - name: Create release package
+      run: |
+        $version = "${{ github.ref_name }}"
+        $packageName = "PublicIPWatcher-$version"
+        
+        # Create installer directory
+        New-Item -ItemType Directory -Path "installer" -Force
+        Copy-Item "release\IPNotification.exe" "installer\"
+        
+        # Create installation files
+        @"
+        @echo off
+        echo PublicIPWatcher Installer
+        echo ========================
+        echo.
+        echo This will install PublicIPWatcher to %LOCALAPPDATA%\PublicIPWatcher\
+        echo.
+        pause
+        
+        mkdir "%LOCALAPPDATA%\PublicIPWatcher" 2>nul
+        copy "IPNotification.exe" "%LOCALAPPDATA%\PublicIPWatcher\"
+        
+        echo.
+        echo Installation complete!
+        echo You can now run PublicIPWatcher from the Start Menu or directly.
+        echo.
+        pause
+        "@ | Out-File -FilePath "installer\Install.bat" -Encoding ASCII
+        
+        @"
+        @echo off
+        echo PublicIPWatcher Uninstaller
+        echo ==========================
+        echo.
+        echo This will remove PublicIPWatcher from your system.
+        echo.
+        pause
+        
+        taskkill /f /im IPNotification.exe 2>nul
+        rmdir /s /q "%LOCALAPPDATA%\PublicIPWatcher" 2>nul
+        
+        echo.
+        echo Uninstallation complete!
+        echo.
+        pause
+        "@ | Out-File -FilePath "installer\Uninstall.bat" -Encoding ASCII
+        
+        Copy-Item "README.md" "installer\"
+        Copy-Item "LICENSE" "installer\"
+        
+        # Create ZIP package
+        Compress-Archive -Path "installer\*" -DestinationPath "$packageName.zip"
+        
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: PublicIPWatcher ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+        body: |
+          ## What's New in ${{ github.ref_name }}
+          
+          ### Features
+          - System tray integration for Windows
+          - Automatic public IP monitoring
+          - Change notifications
+          - Configurable check intervals
+          - Windows startup integration
+          
+          ### Installation
+          1. Download the ZIP file below
+          2. Extract to any folder
+          3. Run `Install.bat` for automatic installation
+          4. Or run `IPNotification.exe` directly
+          
+          ### System Requirements
+          - Windows 10 (1809+) or Windows 11
+          - 64-bit architecture
+          - 50 MB RAM and disk space
+          - Internet connection
+          
+          **Full Changelog**: https://github.com/${{ github.repository }}/compare/v1.0.0...${{ github.ref_name }}
+          
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./PublicIPWatcher-${{ github.ref_name }}.zip
+        asset_name: PublicIPWatcher-${{ github.ref_name }}.zip
+        asset_content_type: application/zip

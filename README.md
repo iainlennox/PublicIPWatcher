@@ -2,7 +2,8 @@
 
 A lightweight Windows system tray application that monitors your public IP address and notifies you when it changes.
 
-![Screenshot placeholder](docs/screenshot.png)
+<img width="419" height="217" alt="image" src="https://github.com/user-attachments/assets/04a3fb03-6218-4f50-a170-2332d2b0c3bd" />
+
 
 ## Features
 

@@ -30,7 +30,7 @@ namespace IPNotification
         {
             // Form properties
             Text = "PublicIPWatcher Status";
-            Size = new Size(350, 280);
+            Size = new Size(350, 310);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             MinimizeBox = false;
@@ -42,7 +42,7 @@ namespace IPNotification
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 2,
-                RowCount = 7,
+                RowCount = 8,
                 Padding = new Padding(10)
             };
 
@@ -102,6 +102,18 @@ namespace IPNotification
             };
             githubLink.Click += OnGitHubLinkClick;
             mainPanel.Controls.Add(githubLink, 1, 5);
+
+            // Author credit
+            var authorLabel = new Label 
+            { 
+                Text = "Made by Iain Lennox in Glasgow Scotland", 
+                AutoSize = true,
+                ForeColor = Color.Gray,
+                Font = new Font(Font.FontFamily, Font.Size - 1, FontStyle.Italic),
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+            mainPanel.SetColumnSpan(authorLabel, 2); // Span across both columns
+            mainPanel.Controls.Add(authorLabel, 0, 6);
 
             // Set column styles
             mainPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40));

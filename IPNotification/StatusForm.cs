@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -29,7 +30,7 @@ namespace IPNotification
         {
             // Form properties
             Text = "PublicIPWatcher Status";
-            Size = new Size(350, 250);
+            Size = new Size(350, 280);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             MinimizeBox = false;
@@ -41,7 +42,7 @@ namespace IPNotification
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 2,
-                RowCount = 6,
+                RowCount = 7,
                 Padding = new Padding(10)
             };
 
@@ -89,6 +90,18 @@ namespace IPNotification
             buttonPanel.Controls.Add(_copyHistoryButton);
 
             mainPanel.Controls.Add(buttonPanel, 1, 4);
+
+            // GitHub link
+            var githubLink = new LinkLabel 
+            { 
+                Text = "GitHub Repository", 
+                AutoSize = true,
+                LinkColor = Color.Blue,
+                ActiveLinkColor = Color.DarkBlue,
+                VisitedLinkColor = Color.Purple
+            };
+            githubLink.Click += OnGitHubLinkClick;
+            mainPanel.Controls.Add(githubLink, 1, 5);
 
             // Set column styles
             mainPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40));
@@ -170,6 +183,23 @@ namespace IPNotification
             catch (Exception ex)
             {
                 MessageBox.Show($"Failed to copy history: {ex.Message}", "Error", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void OnGitHubLinkClick(object? sender, EventArgs e)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "https://github.com/iainlennox/PublicIPWatcher",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to open GitHub link: {ex.Message}", "Error", 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

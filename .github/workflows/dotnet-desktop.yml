@@ -87,7 +87,12 @@ jobs:
 
     - name: Create release archive
       run: |
-        Compress-Archive -Path ./release-build/IPNotification.exe -DestinationPath ./PublicIPWatcher-v${{ steps.get_version.outputs.VERSION }}-win-x64.zip
+        # Copy installation scripts to release build directory
+        Copy-Item "Install.bat" -Destination "./release-build/"
+        Copy-Item "Uninstall.bat" -Destination "./release-build/"
+        
+        # Create the release archive with executable and install scripts
+        Compress-Archive -Path "./release-build/*" -DestinationPath "./PublicIPWatcher-v${{ steps.get_version.outputs.VERSION }}-win-x64.zip"
 
     - name: Generate release notes
       id: release_notes
@@ -95,14 +100,27 @@ jobs:
         $notes = @"
         ## PublicIPWatcher v${{ steps.get_version.outputs.VERSION }}
         
-        ### Installation
+        ### Installation Options
+        
+        **Option 1: Easy Installation (Recommended)**
         1. Download the ZIP file below
-        2. Extract IPNotification.exe to any folder
-        3. Run IPNotification.exe (no installation required)
+        2. Extract all files to a folder
+        3. Run `Install.bat` as administrator (recommended) or regular user
+        4. The installer will set up desktop shortcuts and auto-start
+        
+        **Option 2: Portable Use**
+        1. Download the ZIP file below  
+        2. Extract `IPNotification.exe` to any folder
+        3. Run `IPNotification.exe` directly (no installation required)
+        
+        ### Uninstallation
+        - Use "Add or Remove Programs" in Windows Settings, or
+        - Run `Uninstall.bat` from the installation directory
         
         ### Features
         - Monitor your public IP address automatically
         - System tray integration
+        - GitHub repository link in status window
         - Configurable check intervals
         - Change notifications
         - IP history tracking
@@ -112,9 +130,10 @@ jobs:
         - No .NET installation required (self-contained)
         
         ### File Information
-        - **File**: IPNotification.exe
-        - **Type**: Self-contained executable
-        - **Size**: ~30MB (includes .NET runtime)
+        - **Main Executable**: IPNotification.exe (~30MB, includes .NET runtime)
+        - **Install Script**: Install.bat (automated installation with shortcuts)
+        - **Uninstall Script**: Uninstall.bat (complete removal)
+        - **Package Type**: Self-contained (no .NET installation required)
         "@
         
         # Save to file for GitHub release

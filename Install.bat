@@ -28,12 +28,32 @@ set "EXECUTABLE=IPNotification.exe"
 echo Installation directory: %INSTALL_DIR%
 echo.
 
-REM Check if executable exists in current directory
-if not exist "%EXECUTABLE%" (
-    echo ERROR: %EXECUTABLE% not found in current directory!
+REM Check if executable exists in current directory or subdirectories
+if exist "%EXECUTABLE%" (
+    set "SOURCE_PATH=%EXECUTABLE%"
+    echo Found %EXECUTABLE% in current directory.
+) else if exist "release-build\%EXECUTABLE%" (
+    set "SOURCE_PATH=release-build\%EXECUTABLE%"
+    echo Found %EXECUTABLE% in release-build directory.
+) else if exist "publish\%EXECUTABLE%" (
+    set "SOURCE_PATH=publish\%EXECUTABLE%"
+    echo Found %EXECUTABLE% in publish directory.
+) else if exist "bin\Release\net8.0-windows\win-x64\publish\%EXECUTABLE%" (
+    set "SOURCE_PATH=bin\Release\net8.0-windows\win-x64\publish\%EXECUTABLE%"
+    echo Found %EXECUTABLE% in build output directory.
+) else (
+    echo ERROR: %EXECUTABLE% not found!
     echo.
-    echo Please ensure you have extracted the PublicIPWatcher ZIP file
-    echo and are running this installer from the same folder as %EXECUTABLE%.
+    echo Please ensure you have:
+    echo 1. Extracted the PublicIPWatcher ZIP file completely
+    echo 2. Are running this installer from the extracted folder
+    echo 3. The %EXECUTABLE% file is present
+    echo.
+    echo Searched locations:
+    echo - Current directory: %CD%
+    echo - release-build\%EXECUTABLE%
+    echo - publish\%EXECUTABLE%
+    echo - bin\Release\net8.0-windows\win-x64\publish\%EXECUTABLE%
     echo.
     pause
     exit /b 1
@@ -65,13 +85,13 @@ if "%ERRORLEVEL%"=="0" (
 
 REM Copy executable
 echo Copying %EXECUTABLE% to installation directory...
-copy "%EXECUTABLE%" "%INSTALL_DIR%\%EXECUTABLE%" >NUL
+copy "%SOURCE_PATH%" "%INSTALL_DIR%\%EXECUTABLE%" >NUL
 if errorlevel 1 (
-    echo ERROR: Failed to copy executable!
+    echo ERROR: Failed to copy executable from %SOURCE_PATH%!
     pause
     exit /b 1
 )
-echo File copied successfully.
+echo File copied successfully from %SOURCE_PATH%.
 
 REM Create startup shortcut
 echo Creating startup shortcut...

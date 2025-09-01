@@ -90,6 +90,11 @@ jobs:
         # Copy installation scripts to release build directory
         Copy-Item "Install.bat" -Destination "./release-build/"
         Copy-Item "Uninstall.bat" -Destination "./release-build/"
+        Copy-Item "TestInstall.bat" -Destination "./release-build/"
+        
+        # List files in release-build directory for debugging
+        Write-Host "Files in release-build directory:"
+        Get-ChildItem "./release-build/" | ForEach-Object { Write-Host "  $($_.Name)" }
         
         # Create the release archive with executable and install scripts
         Compress-Archive -Path "./release-build/*" -DestinationPath "./PublicIPWatcher-v${{ steps.get_version.outputs.VERSION }}-win-x64.zip"
@@ -113,6 +118,10 @@ jobs:
         2. Extract `IPNotification.exe` to any folder
         3. Run `IPNotification.exe` directly (no installation required)
         
+        **Troubleshooting Installation**
+        - If installation fails, run `TestInstall.bat` to check file locations
+        - Ensure all files are extracted from the ZIP before running installer
+        
         ### Uninstallation
         - Use "Add or Remove Programs" in Windows Settings, or
         - Run `Uninstall.bat` from the installation directory
@@ -133,6 +142,7 @@ jobs:
         - **Main Executable**: IPNotification.exe (~30MB, includes .NET runtime)
         - **Install Script**: Install.bat (automated installation with shortcuts)
         - **Uninstall Script**: Uninstall.bat (complete removal)
+        - **Test Script**: TestInstall.bat (troubleshooting tool)
         - **Package Type**: Self-contained (no .NET installation required)
         "@
         
